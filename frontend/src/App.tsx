@@ -3,7 +3,7 @@ import { useDucks } from './hooks/useDucks';
 import { DuckTable } from './components/DuckTable';
 import { DuckForm } from './components/DuckForm';
 import { ConfirmDialog } from './components/ConfirmDialog';
-import { Duck } from './types/duck';
+import type { Duck } from './types/duck';
 
 type DialogState = { kind: 'add' } | { kind: 'edit'; duck: Duck } | { kind: 'delete'; duck: Duck } | null;
 

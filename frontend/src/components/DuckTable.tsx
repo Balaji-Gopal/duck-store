@@ -1,4 +1,4 @@
-import { Duck } from '../types/duck';
+import type { Duck } from '../types/duck';
 
 interface DuckTableProps {
   ducks: Duck[];

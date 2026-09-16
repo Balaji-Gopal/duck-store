@@ -3,7 +3,7 @@ import { ducksApi } from './ducks';
 
 describe('ducksApi', () => {
   beforeEach(() => {
-    global.fetch = vi.fn();
+    globalThis.fetch = vi.fn();
   });
 
   it('lists ducks from GET /ducks', async () => {

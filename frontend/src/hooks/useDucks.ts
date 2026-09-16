@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ducksApi } from '../api/ducks';
-import { CreateDuckInput, Duck, UpdateDuckInput } from '../types/duck';
+import type { CreateDuckInput, Duck, UpdateDuckInput } from '../types/duck';
 
 export function useDucks() {
   const [ducks, setDucks] = useState<Duck[]>([]);
