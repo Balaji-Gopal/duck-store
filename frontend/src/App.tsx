@@ -10,11 +10,22 @@ type DialogState = { kind: 'add' } | { kind: 'edit'; duck: Duck } | { kind: 'del
 export default function App() {
   const { ducks, loading, error, addDuck, editDuck, deleteDuck } = useDucks();
   const [dialog, setDialog] = useState<DialogState>(null);
+  const [mutationError, setMutationError] = useState<string | null>(null);
+
+  function openDialog(next: DialogState) {
+    setMutationError(null);
+    setDialog(next);
+  }
+
+  function closeDialog() {
+    setMutationError(null);
+    setDialog(null);
+  }
 
   return (
     <main>
       <h1>Duck Warehouse</h1>
-      <button onClick={() => setDialog({ kind: 'add' })}>Add duck</button>
+      <button onClick={() => openDialog({ kind: 'add' })}>Add duck</button>
 
       {loading && <p>Loading…</p>}
       {error && <p role="alert">{error}</p>}
@@ -22,42 +33,63 @@ export default function App() {
 
       <DuckTable
         ducks={ducks}
-        onEdit={(duck) => setDialog({ kind: 'edit', duck })}
-        onDelete={(duck) => setDialog({ kind: 'delete', duck })}
+        onEdit={(duck) => openDialog({ kind: 'edit', duck })}
+        onDelete={(duck) => openDialog({ kind: 'delete', duck })}
       />
 
       {dialog?.kind === 'add' && (
-        <DuckForm
-          mode="add"
-          onSubmit={(values) => {
-            addDuck(values);
-            setDialog(null);
-          }}
-          onCancel={() => setDialog(null)}
-        />
+        <>
+          {mutationError && <p role="alert">{mutationError}</p>}
+          <DuckForm
+            mode="add"
+            onSubmit={async (values) => {
+              try {
+                await addDuck(values);
+                closeDialog();
+              } catch (e) {
+                setMutationError((e as Error).message);
+              }
+            }}
+            onCancel={closeDialog}
+          />
+        </>
       )}
 
       {dialog?.kind === 'edit' && (
-        <DuckForm
-          mode="edit"
-          initialDuck={dialog.duck}
-          onSubmit={(values) => {
-            editDuck(dialog.duck.id, { price: values.price, quantity: values.quantity });
-            setDialog(null);
-          }}
-          onCancel={() => setDialog(null)}
-        />
+        <>
+          {mutationError && <p role="alert">{mutationError}</p>}
+          <DuckForm
+            mode="edit"
+            initialDuck={dialog.duck}
+            onSubmit={async (values) => {
+              try {
+                await editDuck(dialog.duck.id, { price: values.price, quantity: values.quantity });
+                closeDialog();
+              } catch (e) {
+                setMutationError((e as Error).message);
+              }
+            }}
+            onCancel={closeDialog}
+          />
+        </>
       )}
 
       {dialog?.kind === 'delete' && (
-        <ConfirmDialog
-          message={`Delete duck #${dialog.duck.id}?`}
-          onConfirm={() => {
-            deleteDuck(dialog.duck.id);
-            setDialog(null);
-          }}
-          onCancel={() => setDialog(null)}
-        />
+        <>
+          {mutationError && <p role="alert">{mutationError}</p>}
+          <ConfirmDialog
+            message={`Delete duck #${dialog.duck.id}?`}
+            onConfirm={async () => {
+              try {
+                await deleteDuck(dialog.duck.id);
+                closeDialog();
+              } catch (e) {
+                setMutationError((e as Error).message);
+              }
+            }}
+            onCancel={closeDialog}
+          />
+        </>
       )}
     </main>
   );
