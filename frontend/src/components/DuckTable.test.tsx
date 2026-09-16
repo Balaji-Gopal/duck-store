@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { DuckTable } from './DuckTable';
-import { Duck } from '../types/duck';
+import type { Duck } from '../types/duck';
 
 const ducks: Duck[] = [
   { id: 1, color: 'Red', size: 'XLarge', price: 200, quantity: 10000 },

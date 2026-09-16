@@ -1,5 +1,5 @@
-import { FormEvent, useId, useState } from 'react';
-import { Duck, DuckColor, DuckSize } from '../types/duck';
+import { type FormEvent, useId, useState } from 'react';
+import type { Duck, DuckColor, DuckSize } from '../types/duck';
 
 const COLORS: DuckColor[] = ['Red', 'Green', 'Yellow', 'Black'];
 const SIZES: DuckSize[] = ['XLarge', 'Large', 'Medium', 'Small', 'XSmall'];
