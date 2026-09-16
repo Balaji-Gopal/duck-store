@@ -1,14 +1,27 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, QueryFailedError, Repository } from 'typeorm';
 import { Duck } from '../shared/duck.entity';
 import { toPriceString } from '../shared/duck-price.util';
 import { CreateDuckDto } from './dto/create-duck.dto';
 import { UpdateDuckDto } from './dto/update-duck.dto';
+
+function isDuplicateKeyError(error: unknown): boolean {
+  if (!(error instanceof QueryFailedError)) {
+    return false;
+  }
+  const driverError = (error as QueryFailedError & { driverError?: { code?: string } })
+    .driverError;
+  return (
+    (error as QueryFailedError & { code?: string }).code === 'ER_DUP_ENTRY' ||
+    driverError?.code === 'ER_DUP_ENTRY'
+  );
+}
 
 @Injectable()
 export class WarehouseService {
@@ -47,6 +60,15 @@ export class WarehouseService {
       throw new NotFoundException(`Duck ${id} not found`);
     }
 
+    if (dto.color !== undefined && dto.color !== duck.color) {
+      throw new BadRequestException('color is immutable and cannot be changed via edit');
+    }
+    if (dto.size !== undefined && dto.size !== duck.size) {
+      throw new BadRequestException('size is immutable and cannot be changed via edit');
+    }
+
+    const changes: Partial<Pick<Duck, 'price' | 'quantity'>> = {};
+
     if (dto.price !== undefined) {
       const newPrice = toPriceString(dto.price);
       if (newPrice !== duck.price) {
@@ -62,15 +84,29 @@ export class WarehouseService {
               `(id=${collision.id}). Use "add duck" to merge quantities instead of editing price into a collision.`,
           );
         }
-        duck.price = newPrice;
+        changes.price = newPrice;
       }
     }
 
     if (dto.quantity !== undefined) {
-      duck.quantity = dto.quantity;
+      changes.quantity = dto.quantity;
     }
 
-    return this.duckRepository.save(duck);
+    if (Object.keys(changes).length > 0) {
+      try {
+        await this.duckRepository.update(id, changes);
+      } catch (error) {
+        if (isDuplicateKeyError(error)) {
+          throw new ConflictException(
+            `A duck with color=${duck.color}, size=${duck.size}, price=${changes.price ?? duck.price} already exists. ` +
+              `Use "add duck" to merge quantities instead of editing price into a collision.`,
+          );
+        }
+        throw error;
+      }
+    }
+
+    return this.duckRepository.findOneByOrFail({ id });
   }
 
   async deleteDuck(id: number): Promise<void> {
@@ -78,7 +114,6 @@ export class WarehouseService {
     if (!duck) {
       throw new NotFoundException(`Duck ${id} not found`);
     }
-    duck.deleted = true;
-    await this.duckRepository.save(duck);
+    await this.duckRepository.update(id, { deleted: true });
   }
 }

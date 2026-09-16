@@ -1,6 +1,8 @@
 import Decimal from 'decimal.js';
 import { ShippingMode } from '../store.types';
 import { WoodPackagingStrategy } from '../packaging/wood-packaging.strategy';
+import { PlasticPackagingStrategy } from '../packaging/plastic-packaging.strategy';
+import { CardboardPackagingStrategy } from '../packaging/cardboard-packaging.strategy';
 import { PricingService } from './pricing.service';
 import { BulkDiscountRule } from './bulk-discount.rule';
 import { PackagingSurchargeRule } from './packaging-surcharge.rule';
@@ -87,6 +89,92 @@ describe('PricingService', () => {
     expect(result.breakdown).toContainEqual({
       label: 'Sea shipping fee',
       amount: '+400.00',
+    });
+  });
+
+  it('applies the plastic packaging surcharge (+10%)', () => {
+    const context: OrderContext = {
+      quantity: 10,
+      destinationCountry: 'Germany',
+      shippingMode: ShippingMode.LAND,
+      packaging: new PlasticPackagingStrategy(),
+    };
+
+    const result = pricingService.price(new Decimal(10), context);
+    // base: 10 * 10 = 100
+    // plastic surcharge +10%: 100 * 10% = 10.00
+    expect(result.breakdown).toContainEqual({
+      label: 'Plastic packaging surcharge',
+      amount: '+10.00',
+    });
+  });
+
+  it('applies the cardboard packaging surcharge (-1%)', () => {
+    const context: OrderContext = {
+      quantity: 10,
+      destinationCountry: 'Germany',
+      shippingMode: ShippingMode.LAND,
+      packaging: new CardboardPackagingStrategy(),
+    };
+
+    const result = pricingService.price(new Decimal(10), context);
+    // base: 10 * 10 = 100
+    // cardboard surcharge -1%: 100 * -1% = -1.00
+    expect(result.breakdown).toContainEqual({
+      label: 'Cardboard packaging discount',
+      amount: '-1.00',
+    });
+  });
+
+  it('applies the Bolivia destination surcharge (+13%)', () => {
+    const context: OrderContext = {
+      quantity: 10,
+      destinationCountry: 'Bolivia',
+      shippingMode: ShippingMode.LAND,
+      packaging: new WoodPackagingStrategy(),
+    };
+
+    const result = pricingService.price(new Decimal(10), context);
+    // base: 10 * 10 = 100
+    // wood surcharge +5%:        100 +  5 = 105
+    // Bolivia surcharge +13%:    105 * 13% = 13.65
+    expect(result.breakdown).toContainEqual({
+      label: 'Destination surcharge (Bolivia)',
+      amount: '+13.65',
+    });
+  });
+
+  it('applies the India destination surcharge (+19%)', () => {
+    const context: OrderContext = {
+      quantity: 10,
+      destinationCountry: 'India',
+      shippingMode: ShippingMode.LAND,
+      packaging: new WoodPackagingStrategy(),
+    };
+
+    const result = pricingService.price(new Decimal(10), context);
+    // base: 10 * 10 = 100
+    // wood surcharge +5%:      100 +  5 = 105
+    // India surcharge +19%:    105 * 19% = 19.95
+    expect(result.breakdown).toContainEqual({
+      label: 'Destination surcharge (India)',
+      amount: '+19.95',
+    });
+  });
+
+  it('applies the exact land shipping fee ($10 flat per unit)', () => {
+    const context: OrderContext = {
+      quantity: 23,
+      destinationCountry: 'Germany',
+      shippingMode: ShippingMode.LAND,
+      packaging: new WoodPackagingStrategy(),
+    };
+
+    const result = pricingService.price(new Decimal(5), context);
+    // land fee: $10/unit * 23 units = 230.00, independent of unit price/other rules
+    expect(result.breakdown).toContainEqual({
+      label: 'Land shipping fee',
+      amount: '+230.00',
     });
   });
 });
