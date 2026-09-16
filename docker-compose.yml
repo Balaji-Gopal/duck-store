@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: duck_store
+      MYSQL_USER: duck_store
+      MYSQL_PASSWORD: duck_store
+    ports:
+      - '3306:3306'
+    volumes:
+      - duck-store-mysql-data:/var/lib/mysql
+      - ./backend/docker/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql
+volumes:
+  duck-store-mysql-data:
