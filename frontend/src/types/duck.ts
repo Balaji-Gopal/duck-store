@@ -5,7 +5,9 @@ export interface Duck {
   id: number;
   color: DuckColor;
   size: DuckSize;
-  price: number;
+  // The backend's `price` column is a TypeORM `decimal`, which the mysql2 driver returns as a
+  // string (e.g. "200.00"), not a number — so GET /ducks really sends back a decimal string.
+  price: string;
   quantity: number;
 }
 

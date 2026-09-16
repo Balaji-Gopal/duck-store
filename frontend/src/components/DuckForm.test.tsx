@@ -9,7 +9,7 @@ describe('DuckForm', () => {
     render(
       <DuckForm
         mode="edit"
-        initialDuck={{ id: 1, color: 'Red', size: 'XLarge', price: 200, quantity: 10000 }}
+        initialDuck={{ id: 1, color: 'Red', size: 'XLarge', price: '200.00', quantity: 10000 }}
         onSubmit={onSubmit}
         onCancel={vi.fn()}
       />,

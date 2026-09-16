@@ -5,15 +5,15 @@ import { DuckTable } from './DuckTable';
 import type { Duck } from '../types/duck';
 
 const ducks: Duck[] = [
-  { id: 1, color: 'Red', size: 'XLarge', price: 200, quantity: 10000 },
-  { id: 2, color: 'Green', size: 'Medium', price: 50, quantity: 5 },
+  { id: 1, color: 'Red', size: 'XLarge', price: '200.00', quantity: 10000 },
+  { id: 2, color: 'Green', size: 'Medium', price: '50.00', quantity: 5 },
 ];
 
 describe('DuckTable', () => {
   it('renders a row per duck with its fields', () => {
     render(<DuckTable ducks={ducks} onEdit={vi.fn()} onDelete={vi.fn()} />);
     expect(screen.getByText('Red')).toBeInTheDocument();
-    expect(screen.getByText('200 USD')).toBeInTheDocument();
+    expect(screen.getByText('200.00 USD')).toBeInTheDocument();
     expect(screen.getByText('10000')).toBeInTheDocument();
   });
 

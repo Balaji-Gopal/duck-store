@@ -7,7 +7,7 @@ describe('ducksApi', () => {
   });
 
   it('lists ducks from GET /ducks', async () => {
-    const ducks = [{ id: 1, color: 'Red', size: 'XLarge', price: 200, quantity: 10 }];
+    const ducks = [{ id: 1, color: 'Red', size: 'XLarge', price: '200.00', quantity: 10 }];
     vi.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ducks } as Response);
 
     const result = await ducksApi.list();

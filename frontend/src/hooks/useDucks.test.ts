@@ -7,7 +7,9 @@ vi.mock('../api/ducks');
 
 describe('useDucks', () => {
   it('loads ducks on mount and refreshes after addDuck', async () => {
-    const listed = [{ id: 1, color: 'Red' as const, size: 'XLarge' as const, price: 200, quantity: 10 }];
+    const listed = [
+      { id: 1, color: 'Red' as const, size: 'XLarge' as const, price: '200.00', quantity: 10 },
+    ];
     vi.mocked(ducksApi.list).mockResolvedValue(listed);
     vi.mocked(ducksApi.add).mockResolvedValue(listed[0]);
 
