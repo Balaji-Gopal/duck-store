@@ -426,7 +426,7 @@ export async function truncateDucks(dataSource: DataSource): Promise<void> {
 }
 ```
 
-Note: `StoreModule` doesn't exist until Task 8 — stub it now so `test-app.ts` compiles for the rest of the plan:
+Note: `StoreModule` isn't fully implemented until Task 7 — stub it now so `test-app.ts` compiles for the rest of the plan:
 
 Create `backend/src/store/store.module.ts`:
 ```ts
