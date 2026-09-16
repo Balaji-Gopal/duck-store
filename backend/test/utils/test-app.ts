@@ -31,6 +31,11 @@ export async function createTestApp(): Promise<{
   const app = moduleRef.createNestApplication();
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   await app.init();
+  // Bind to a real (ephemeral) port up front rather than relying on supertest's lazy
+  // listen-on-first-request. Without this, many requests fired truly concurrently (e.g. the
+  // 50-way add-duck concurrency test) race supertest's internal `server.listen(0)` call and get
+  // ECONNRESET instead of a response.
+  await app.listen(0);
 
   const dataSource = moduleRef.get<DataSource>(getDataSourceToken());
   return { app, dataSource };

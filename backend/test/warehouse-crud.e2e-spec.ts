@@ -93,6 +93,53 @@ describe('Warehouse list/edit/delete', () => {
     expect(stillInDb?.deleted).toBe(true);
   });
 
+  it('rejects an edit that would collide with a previously soft-deleted duck at the same color+size+new price (not a 500)', async () => {
+    // add Black/Medium @5, delete it, add Black/Medium @7, then edit the second duck's price to 5
+    await request(app.getHttpServer())
+      .post('/ducks')
+      .send({ color: 'Black', size: 'Medium', price: 5, quantity: 10 });
+    const firstDuck = await dataSource
+      .getRepository(Duck)
+      .findOneByOrFail({ color: 'Black' as any, size: 'Medium' as any, price: '5.00' as any });
+    await request(app.getHttpServer()).delete(`/ducks/${firstDuck.id}`);
+
+    const addSecond = await request(app.getHttpServer())
+      .post('/ducks')
+      .send({ color: 'Black', size: 'Medium', price: 7, quantity: 3 });
+
+    const res = await request(app.getHttpServer())
+      .patch(`/ducks/${addSecond.body.id}`)
+      .send({ price: 5 });
+
+    expect(res.status).toBe(409);
+  });
+
+  it('rejects an edit that changes color, without silently dropping it', async () => {
+    const duck = await seedDuck();
+
+    const res = await request(app.getHttpServer())
+      .patch(`/ducks/${duck.id}`)
+      .send({ color: 'Green' });
+
+    expect(res.status).toBe(400);
+
+    const stillInDb = await dataSource.getRepository(Duck).findOneByOrFail({ id: duck.id });
+    expect(stillInDb.color).toBe('Red');
+  });
+
+  it('rejects an edit that changes size, without silently dropping it', async () => {
+    const duck = await seedDuck();
+
+    const res = await request(app.getHttpServer())
+      .patch(`/ducks/${duck.id}`)
+      .send({ size: 'Small' });
+
+    expect(res.status).toBe(400);
+
+    const stillInDb = await dataSource.getRepository(Duck).findOneByOrFail({ id: duck.id });
+    expect(stillInDb.size).toBe('XLarge');
+  });
+
   it('returns 404 when editing or deleting a duck that does not exist', async () => {
     const edit = await request(app.getHttpServer())
       .patch('/ducks/999999')
