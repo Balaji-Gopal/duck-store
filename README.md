@@ -33,6 +33,14 @@ npm install
 npm run dev          # listens on :5173 by default
 ```
 
+> **Note:** `docker compose up -d` only runs the `duck_store_test` schema init script
+> (`backend/docker/init-test-db.sql`) on a **fresh** Docker volume — Docker only executes
+> scripts under `/docker-entrypoint-initdb.d/*` the first time a container's volume is
+> created. If you're reusing an existing `duck-store-mysql-data` volume from a prior run, the
+> `duck_store_test` schema may not exist yet. If integration tests fail with a "database
+> duck_store_test does not exist"-style error, run `docker compose down -v` (drops the volume)
+> and then `docker compose up -d` again to re-trigger the init script.
+
 Open the frontend URL printed by Vite. The backend API is at `http://localhost:3000`.
 
 ## Running tests
