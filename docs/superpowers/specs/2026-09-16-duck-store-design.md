@@ -59,9 +59,13 @@ and "avoid unnecessary complexity" guidance.
 | quantity | int     | units in stock                           |
 | deleted  | boolean | logical-delete flag, default false       |
 
-A unique index on `(color, size, price)`, scoped to non-deleted rows, backs
-the "no duplicate active duck" invariant at the database level rather than
-relying purely on application logic.
+A unique index on `(color, size, price)` — global, not scoped to
+`deleted` — backs the "no duplicate active duck" invariant at the database
+level rather than relying purely on application logic. It is deliberately
+*not* scoped to non-deleted rows: MySQL has no partial/filtered unique
+index, and a global key is exactly what §5 below needs for the
+undelete-and-merge behavior (one row can only ever exist per key, active or
+deleted, so the same atomic upsert handles both cases).
 
 ## 5. Concurrency: the add-duck merge invariant
 
