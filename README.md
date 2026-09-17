@@ -83,11 +83,13 @@ Open the frontend URL printed by Vite (`http://localhost:5173`). The backend API
 ```bash
 # Backend unit + integration tests (needs docker compose up -d for the MySQL-backed ones)
 cd backend
-npm run test        # unit tests: packaging strategies, pricing rules
-npm run test:e2e    # integration tests: warehouse CRUD, the concurrent merge invariant, order pricing
+npm install          # skip if you already ran this in the setup step above
+npm run test         # unit tests: packaging strategies, pricing rules
+npm run test:e2e     # integration tests: warehouse CRUD, the concurrent merge invariant, order pricing
 
 # Frontend
 cd frontend
+npm install          # skip if you already ran this in the setup step above
 npm run test
 ```
 
