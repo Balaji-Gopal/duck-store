@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm';
 import { Duck } from '../../src/shared/duck.entity';
 import { WarehouseModule } from '../../src/warehouse/warehouse.module';
 import { StoreModule } from '../../src/store/store.module';
+import { CreateDuckTable1758000000000 } from '../../src/migrations/1758000000000-CreateDuckTable';
 
 export async function createTestApp(): Promise<{
   app: INestApplication;
@@ -20,7 +21,9 @@ export async function createTestApp(): Promise<{
         password: process.env.TEST_DB_PASSWORD ?? 'duck_store',
         database: process.env.TEST_DB_NAME ?? 'duck_store_test',
         entities: [Duck],
-        synchronize: true,
+        migrations: [CreateDuckTable1758000000000],
+        synchronize: false,
+        migrationsRun: true,
         dropSchema: true,
       }),
       WarehouseModule,
