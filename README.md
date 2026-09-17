@@ -14,11 +14,25 @@ Full design rationale: [docs/superpowers/specs/2026-09-16-duck-store-design.md](
 
 ## Setup (clean machine)
 
+Prerequisites: Docker.
+
+### Option A — just want to see it running
+
+```bash
+docker compose up --build
+```
+
+That's it — one command builds and starts MySQL, the backend, and the frontend together.
+Once it settles, open **http://localhost:8080** for the warehouse UI. The backend API is at
+`http://localhost:3000`.
+
+### Option B — iterating on the code
+
 Prerequisites: Docker, Node.js 20+.
 
 ```bash
-# 1. Start MySQL (also creates the duck_store_test schema used by integration tests)
-docker compose up -d
+# 1. Start MySQL only (also creates the duck_store_test schema used by integration tests)
+docker compose up -d mysql
 
 # 2. Backend
 cd backend
@@ -30,18 +44,19 @@ npm run start:dev   # runs pending migrations automatically on boot, then listen
 cd frontend
 cp .env.example .env
 npm install
-npm run dev          # listens on :5173 by default
+npm run dev          # listens on :5173 by default, with hot reload
 ```
 
-> **Note:** `docker compose up -d` only runs the `duck_store_test` schema init script
+Open the frontend URL printed by Vite (`http://localhost:5173`). The backend API is at
+`http://localhost:3000`.
+
+> **Note:** the `mysql` service only runs the `duck_store_test` schema init script
 > (`backend/docker/init-test-db.sql`) on a **fresh** Docker volume — Docker only executes
 > scripts under `/docker-entrypoint-initdb.d/*` the first time a container's volume is
 > created. If you're reusing an existing `duck-store-mysql-data` volume from a prior run, the
 > `duck_store_test` schema may not exist yet. If integration tests fail with a "database
 > duck_store_test does not exist"-style error, run `docker compose down -v` (drops the volume)
 > and then `docker compose up -d` again to re-trigger the init script.
-
-Open the frontend URL printed by Vite. The backend API is at `http://localhost:3000`.
 
 ## Running tests
 
