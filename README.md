@@ -162,3 +162,61 @@ deltas.
 - **Chain of Responsibility** (`backend/src/store/pricing/`) — an ordered list of `PricingRule`
   objects, each contributing one labeled line item to a running `PriceBreakdown`. This is what
   produces the itemized discount/surcharge breakdown the spec requires as output.
+
+## Security notes
+
+What's covered:
+
+- **SQL injection** — the only raw SQL is the parameterized atomic upsert in
+  `WarehouseService.addDuck` (`?` placeholders with a bound args array, never string
+  concatenation); everything else goes through TypeORM's query builder/repository API.
+- **Input validation** — every DTO uses `class-validator` with a global `ValidationPipe({
+  whitelist: true, transform: true })`, so unknown fields are stripped and every accepted field
+  is type/range-checked (including an upper bound on `price` matching the `decimal(10,2)` column,
+  and `@IsInt()` on quantities — added after a review pass found a value like `100000000` could
+  reach a raw SQL insert unvalidated and surface as an unhandled 500).
+- **Prototype-safe lookups** — `DestinationSurchargeRule`'s country → surcharge table is a `Map`,
+  not a plain object literal. A plain-object version was vulnerable to
+  `destinationCountry: "__proto__"` resolving to `Object.prototype` instead of `undefined`,
+  crashing the pricing calculation with an unhandled exception from a single crafted request —
+  found and fixed in review, with a regression test.
+- **No secrets in source** — `.env` is gitignored; only dummy, documented, local-dev-only
+  credentials (`duck_store`/`duck_store`, `root`/`root`) appear in `docker-compose.yml` and
+  `.env.example`, matching this project's own Docker network.
+- **Error responses never leak internals** — no stack trace, SQL text, or dependency version
+  is ever returned in an HTTP response body; NestJS's default exception handling logs those
+  server-side only.
+
+Deliberately out of scope (the exercise doesn't call for these, and adding them would be scope
+beyond the ask):
+
+- **No authentication/authorization** — nothing in the spec describes user accounts or access
+  control.
+- **CORS is fully open** (`app.enableCors()` with no origin restriction) — reasonable for a
+  local-dev exercise with no session/cookie-based trust model to protect; would need
+  restricting to the actual frontend origin before any real deployment.
+- **Known low-severity dependency advisories** — `npm audit` flags a few `multer`/`qs`
+  advisories transitively pulled in by `@nestjs/platform-express`, for features this app
+  doesn't use (multipart file uploads, complex query-string parsing — every endpoint here takes
+  a JSON body or no query params at all). The available fix requires an `@nestjs/platform-express`
+  major-version bump; deliberately not applied this close to submission to avoid an
+  unnecessary, untested breaking change for advisories with no real reachable attack surface
+  here.
+
+## Known limitations / possible improvements
+
+Written down deliberately rather than left implicit, per the exercise's own "decide
+deliberately... make a reasonable choice and write it down" instruction:
+
+- **`ON DUPLICATE KEY UPDATE ... VALUES(quantity)`** (the atomic merge upsert) uses a MySQL
+  syntax deprecated since 8.0.20 in favor of a row-alias form. Still correct on `mysql:8.0`;
+  worth migrating before a future MySQL major removes it.
+- **No pagination on `GET /ducks`** — returns every non-deleted duck in one response. Fine at
+  this exercise's scale; a real production warehouse listing would need `limit`/`cursor` params.
+- **No request-level rate limiting** — not needed for an unauthenticated exercise API, but
+  would matter before any public deployment.
+- **Frontend mutation-error and load-error banners both use `role="alert"`** — cosmetic; a test
+  querying by that role alone could see two simultaneously in the rare case both fire at once.
+- **`DuckForm`'s Save button has no disabled-while-submitting state** — a user could
+  theoretically fire overlapping submits by clicking twice after a failed save. Low-impact edge
+  case, not fixed to avoid over-engineering a small form.
