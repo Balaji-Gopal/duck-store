@@ -27,7 +27,11 @@ export class PricingService {
   }
 
   price(unitPrice: Decimal, context: OrderContext) {
-    const breakdown = new PriceBreakdown(unitPrice.times(context.quantity));
+    const breakdown = new PriceBreakdown(new Decimal(0));
+    breakdown.applyFlatAmount(
+      `Base (${context.quantity} x ${unitPrice.toFixed(2)})`,
+      unitPrice.times(context.quantity),
+    );
     for (const rule of this.rules) {
       rule.apply(breakdown, context);
     }

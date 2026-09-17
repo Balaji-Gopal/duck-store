@@ -35,11 +35,15 @@ describe('PricingService', () => {
     // air fee (150 units, no >1000 reduction): 30 * 150 = 4500 -> 7434 + 4500 = 11934
     expect(result.totalToPay).toBe(11934);
     expect(result.breakdown).toEqual([
+      { label: 'Base (150 x 50.00)', amount: '+7500.00' },
       { label: 'Bulk discount (>100 units)', amount: '-1500.00' },
       { label: 'Wood packaging surcharge', amount: '+300.00' },
       { label: 'Destination surcharge (USA)', amount: '+1134.00' },
       { label: 'Air shipping fee', amount: '+4500.00' },
     ]);
+    // every breakdown line item sums exactly to totalToPay
+    const sum = result.breakdown.reduce((acc, item) => acc + Number(item.amount), 0);
+    expect(Number(sum.toFixed(2))).toBe(result.totalToPay);
   });
 
   it('does not apply the bulk discount at or under 100 units', () => {

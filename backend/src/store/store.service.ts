@@ -41,6 +41,7 @@ export class StoreService {
     );
 
     return {
+      unitPrice: duck.price,
       packageType: packaging.packageType,
       protectionTypes: packaging.protectionFor(dto.shippingMode),
       totalToPay,

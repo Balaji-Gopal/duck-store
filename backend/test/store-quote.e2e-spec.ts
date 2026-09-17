@@ -41,10 +41,20 @@ describe('POST /orders/quote', () => {
     });
 
     expect(res.status).toBe(201);
+    expect(res.body.unitPrice).toBe('50.00');
     expect(res.body.packageType).toBe('Wood');
     expect(res.body.protectionTypes).toEqual(['Polystyrene balls']);
     expect(res.body.totalToPay).toBe(11934);
-    expect(res.body.breakdown).toHaveLength(4);
+    expect(res.body.breakdown).toHaveLength(5);
+    expect(res.body.breakdown[0]).toEqual({ label: 'Base (150 x 50.00)', amount: '+7500.00' });
+
+    // every breakdown line item sums exactly to totalToPay -- the response is
+    // self-reconciling, not just a total with unexplained deltas.
+    const sum = res.body.breakdown.reduce(
+      (acc: number, item: { amount: string }) => acc + Number(item.amount),
+      0,
+    );
+    expect(Number(sum.toFixed(2))).toBe(res.body.totalToPay);
   });
 
   it('resolves to the cheapest active price when more than one duck matches color+size', async () => {
@@ -76,6 +86,7 @@ describe('POST /orders/quote', () => {
 
     // base = 5.00 * 1 = 5; plastic +10% = 5.5; destination +15% = 6.325; land +10/unit = 16.325 -> 16.33 (bankers-neutral round)
     expect(res.status).toBe(201);
+    expect(res.body.unitPrice).toBe('5.00'); // proves the cheapest active price (not 9.00) was resolved
     expect(res.body.totalToPay).toBeCloseTo(16.33, 2);
   });
 
