@@ -48,7 +48,8 @@ admin UI together. Once it settles:
 
 ### Option B — iterating on the code
 
-Prerequisites: Docker, Node.js 20+.
+Prerequisites: Docker, Node.js 22+ (`vitest`'s own `engines` field requires
+`^22.12.0 || ^24.0.0 || >=26.0.0` — Node 20 is not supported for running the frontend tests).
 
 ```bash
 # 1. Start MySQL only (also creates the duck_store_test schema used by integration tests)
@@ -124,7 +125,10 @@ npm run test
 |--------|-----------------|--------------------------------------------------------------------|
 | POST   | `/orders/quote` | `{ color, size, quantity, destinationCountry, shippingMode }`     |
 
-Response: `{ packageType, protectionTypes, totalToPay, breakdown }`.
+Response: `{ unitPrice, packageType, protectionTypes, totalToPay, breakdown }`. `breakdown`'s
+first entry is always a `Base (qty x unitPrice)` line, so every entry's `amount` sums exactly
+to `totalToPay` — the response is fully self-reconciling, not just a total with unexplained
+deltas.
 
 ## Decisions made where the spec was ambiguous
 
