@@ -140,6 +140,25 @@ describe('Warehouse list/edit/delete', () => {
     expect(stillInDb.size).toBe('XLarge');
   });
 
+  it('returns 404 for a PATCH racing a concurrent DELETE, instead of silently writing to a deleted row', async () => {
+    // A true concurrent race (DELETE landing mid-PATCH, between updateDuck's initial
+    // lookup and its write) can't be deterministically reproduced black-box, but the
+    // fix is a SQL-level guard -- update({ id, deleted: false }, changes) -- so an
+    // already-deleted row exercises the exact same guard the race would hit.
+    const duck = await seedDuck({ quantity: 42 });
+    await request(app.getHttpServer()).delete(`/ducks/${duck.id}`).expect(204);
+
+    const res = await request(app.getHttpServer())
+      .patch(`/ducks/${duck.id}`)
+      .send({ quantity: 999 });
+
+    expect(res.status).toBe(404);
+
+    const stillInDb = await dataSource.getRepository(Duck).findOneByOrFail({ id: duck.id });
+    expect(stillInDb.deleted).toBe(true);
+    expect(stillInDb.quantity).toBe(42); // the PATCH must not have applied
+  });
+
   it('returns 404 when editing or deleting a duck that does not exist', async () => {
     const edit = await request(app.getHttpServer())
       .patch('/ducks/999999')

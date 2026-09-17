@@ -93,8 +93,12 @@ export class WarehouseService {
     }
 
     if (Object.keys(changes).length > 0) {
+      let result;
       try {
-        await this.duckRepository.update(id, changes);
+        // Scoped to deleted: false so a concurrent DELETE landing between the
+        // lookup above and this write can't be silently overwritten -- if the
+        // duck was deleted in between, this update touches zero rows.
+        result = await this.duckRepository.update({ id, deleted: false }, changes);
       } catch (error) {
         if (isDuplicateKeyError(error)) {
           throw new ConflictException(
@@ -104,9 +108,16 @@ export class WarehouseService {
         }
         throw error;
       }
+      if (!result.affected) {
+        throw new NotFoundException(`Duck ${id} not found`);
+      }
     }
 
-    return this.duckRepository.findOneByOrFail({ id });
+    const updated = await this.duckRepository.findOneBy({ id, deleted: false });
+    if (!updated) {
+      throw new NotFoundException(`Duck ${id} not found`);
+    }
+    return updated;
   }
 
   async deleteDuck(id: number): Promise<void> {
