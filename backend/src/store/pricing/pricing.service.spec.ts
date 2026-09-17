@@ -96,6 +96,22 @@ describe('PricingService', () => {
     });
   });
 
+  it('matches a listed country case-insensitively and ignoring surrounding whitespace', () => {
+    const context: OrderContext = {
+      quantity: 10,
+      destinationCountry: '  usa  ',
+      shippingMode: ShippingMode.LAND,
+      packaging: new WoodPackagingStrategy(),
+    };
+
+    const result = pricingService.price(new Decimal(10), context);
+    // base: 100 -> wood +5% = 105 -> USA +18% (not the 15% default) = 18.90
+    expect(result.breakdown).toContainEqual({
+      label: 'Destination surcharge (  usa  )',
+      amount: '+18.90',
+    });
+  });
+
   it('applies the plastic packaging surcharge (+10%)', () => {
     const context: OrderContext = {
       quantity: 10,

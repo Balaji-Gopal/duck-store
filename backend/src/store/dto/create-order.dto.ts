@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsPositive,
   IsString,
+  MaxLength,
 } from 'class-validator';
 import { DuckColor, DuckSize } from '../../shared/duck.entity';
 import { ShippingMode } from '../store.types';
@@ -21,6 +22,7 @@ export class CreateOrderDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   destinationCountry: string;
 
   @IsEnum(ShippingMode)
