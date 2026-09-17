@@ -1,7 +1,7 @@
 import {
   IsEnum,
+  IsInt,
   IsNotEmpty,
-  IsNumber,
   IsPositive,
   IsString,
 } from 'class-validator';
@@ -15,7 +15,7 @@ export class CreateOrderDto {
   @IsEnum(DuckSize)
   size: DuckSize;
 
-  @IsNumber()
+  @IsInt()
   @IsPositive()
   quantity: number;
 

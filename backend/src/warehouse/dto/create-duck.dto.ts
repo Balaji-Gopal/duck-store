@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsPositive, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNumber, IsPositive, Min } from 'class-validator';
 import { DuckColor, DuckSize } from '../../shared/duck.entity';
 
 export class CreateDuckDto {
@@ -8,11 +8,11 @@ export class CreateDuckDto {
   @IsEnum(DuckSize)
   size: DuckSize;
 
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   price: number;
 
-  @IsNumber()
+  @IsInt()
   @Min(1)
   quantity: number;
 }
