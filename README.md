@@ -29,9 +29,22 @@ admin UI together. Once it settles:
 - Backend API: `http://localhost:4000` (mapped from the container's internal port 3000, the
   same way MySQL maps to host port 3307 — chosen to avoid colliding with the very
   commonly-used port 3000 on your machine)
-- Database (browser, via [Adminer](https://www.adminer.org/)): **http://localhost:8082** —
-  System: `MySQL`, Server: `mysql`, Username: `duck_store`, Password: `duck_store`,
-  Database: `duck_store`
+- Database (browser, via [Adminer](https://www.adminer.org/)): **http://localhost:8082**
+
+  Log in with:
+
+  | Field    | Value          |
+  |----------|----------------|
+  | System   | MySQL          |
+  | Server   | **`mysql`**    |
+  | Username | `duck_store`   |
+  | Password | `duck_store`   |
+  | Database | `duck_store`   |
+
+  > The **Server** field must be `mysql` (this project's docker-compose service name).
+  > Browsers often autofill it to `db` from other Adminer tutorials/muscle memory — if
+  > login fails with a "name resolution" / "getaddrinfo failed" error, that's why: clear
+  > the field and type `mysql` explicitly.
 
 ### Option B — iterating on the code
 
