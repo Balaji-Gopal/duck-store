@@ -84,14 +84,24 @@ edits you make to it are never overwritten.)
 
 ## Running tests
 
+Neither `start:dev` (backend) nor `dev` (frontend) needs to be running for any of this —
+the e2e tests boot their own in-process Nest app and talk to it directly (no real HTTP
+server, no separately-running backend), and the frontend tests mock `fetch` entirely.
+The **only** external dependency is MySQL (specifically its `duck_store_test` schema),
+for the backend's `test:e2e` only.
+
 ```bash
-# Backend unit + integration tests (needs docker compose up -d for the MySQL-backed ones)
+# 0. Only needed once, only for backend e2e (unit tests need nothing external):
+docker compose up -d mysql
+
+# Backend
 cd backend
 npm install          # skip if you already ran this in the setup step above
-npm run test         # unit tests: packaging strategies, pricing rules
-npm run test:e2e     # integration tests: warehouse CRUD, the concurrent merge invariant, order pricing
+npm run test         # unit tests: packaging strategies, pricing rules -- no DB needed
+npm run test:e2e     # integration tests: warehouse CRUD, the concurrent merge invariant,
+                      # order pricing -- needs the mysql container from step 0
 
-# Frontend
+# Frontend (independent of the backend and the database entirely)
 cd frontend
 npm install          # skip if you already ran this in the setup step above
 npm run test
