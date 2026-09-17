@@ -24,7 +24,9 @@ docker compose up --build
 
 That's it — one command builds and starts MySQL, the backend, and the frontend together.
 Once it settles, open **http://localhost:8080** for the warehouse UI. The backend API is at
-`http://localhost:3000`.
+`http://localhost:4000` (mapped from the container's internal port 3000, the same way MySQL
+maps to host port 3307 — chosen to avoid colliding with the very commonly-used port 3000 on
+your machine).
 
 ### Option B — iterating on the code
 
