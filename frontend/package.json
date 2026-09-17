@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "cp -n .env.example .env",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",

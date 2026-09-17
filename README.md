@@ -56,19 +56,23 @@ docker compose up -d mysql
 
 # 2. Backend
 cd backend
-cp .env.example .env
 npm install
-npm run start:dev   # runs pending migrations automatically on boot, then listens on :3000
+npm run start:dev   # first run auto-creates .env from .env.example, then runs pending
+                     # migrations on boot, then listens on :3000
 
 # 3. Frontend (separate terminal)
 cd frontend
-cp .env.example .env
 npm install
-npm run dev          # listens on :5173 by default, with hot reload
+npm run dev          # first run auto-creates .env from .env.example, then listens on
+                      # :5173 by default, with hot reload
 ```
 
 Open the frontend URL printed by Vite (`http://localhost:5173`). The backend API is at
 `http://localhost:3000`.
+
+(`.env` is gitignored and auto-created from `.env.example` the first time you run `start:dev`/
+`dev`/`test:e2e` — no manual copy step needed. It's only ever recreated if missing, so any local
+edits you make to it are never overwritten.)
 
 > **Note:** the `mysql` service only runs the `duck_store_test` schema init script
 > (`backend/docker/init-test-db.sql`) on a **fresh** Docker volume — Docker only executes
