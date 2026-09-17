@@ -1,5 +1,6 @@
-import { IsEnum, IsInt, IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNumber, IsOptional, IsPositive, Max, Min } from 'class-validator';
 import { DuckColor, DuckSize } from '../../shared/duck.entity';
+import { MAX_DUCK_PRICE } from './create-duck.dto';
 
 export class UpdateDuckDto {
   @IsOptional()
@@ -13,6 +14,7 @@ export class UpdateDuckDto {
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
+  @Max(MAX_DUCK_PRICE)
   price?: number;
 
   @IsOptional()

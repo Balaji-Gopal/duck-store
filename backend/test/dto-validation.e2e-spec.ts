@@ -37,6 +37,16 @@ describe('DTO validation: quantity must be an integer, price at most 2 decimal p
     expect(res.status).toBe(400);
   });
 
+  it('rejects a price beyond the decimal(10,2) column range on POST /ducks', async () => {
+    // decimal(10,2) allows at most 8 integer digits; 9 digits would be silently
+    // truncated/rejected by MySQL with an unhandled error if this weren't caught here.
+    const res = await request(app.getHttpServer())
+      .post('/ducks')
+      .send({ color: 'Red', size: 'XLarge', price: 100000000, quantity: 10 });
+
+    expect(res.status).toBe(400);
+  });
+
   it('rejects a fractional quantity on PATCH /ducks/:id', async () => {
     const repo = dataSource.getRepository(Duck);
     const duck = await repo.save(
