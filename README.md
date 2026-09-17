@@ -22,11 +22,16 @@ Prerequisites: Docker.
 docker compose up --build
 ```
 
-That's it — one command builds and starts MySQL, the backend, and the frontend together.
-Once it settles, open **http://localhost:8080** for the warehouse UI. The backend API is at
-`http://localhost:4000` (mapped from the container's internal port 3000, the same way MySQL
-maps to host port 3307 — chosen to avoid colliding with the very commonly-used port 3000 on
-your machine).
+That's it — one command builds and starts MySQL, the backend, the frontend, and a database
+admin UI together. Once it settles:
+
+- Warehouse UI: **http://localhost:8080**
+- Backend API: `http://localhost:4000` (mapped from the container's internal port 3000, the
+  same way MySQL maps to host port 3307 — chosen to avoid colliding with the very
+  commonly-used port 3000 on your machine)
+- Database (browser, via [Adminer](https://www.adminer.org/)): **http://localhost:8082** —
+  System: `MySQL`, Server: `mysql`, Username: `duck_store`, Password: `duck_store`,
+  Database: `duck_store`
 
 ### Option B — iterating on the code
 
